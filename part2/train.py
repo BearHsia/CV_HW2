@@ -11,7 +11,7 @@ from data import get_dataloader
 if __name__ == "__main__":
     # Specifiy data folder path and model type(fully/conv)
     folder, model_type = sys.argv[1], sys.argv[2]
-    
+
     # Get data loaders of training set and validation set
     train_loader, val_loader = get_dataloader(folder, batch_size=32)
 
@@ -31,6 +31,11 @@ if __name__ == "__main__":
     use_cuda = torch.cuda.is_available()
     if use_cuda:
         model.cuda()
+
+    train_loss_list = []
+    train_accu_list = []
+    valid_loss_list = []
+    valid_accu_list = []
 
     # Run any number of epochs you want
     ep = 10
@@ -71,19 +76,72 @@ if __name__ == "__main__":
                 ave_loss = total_loss / batch           
                 print ('Training batch index: {}, train loss: {:.6f}, acc: {:.3f}'.format(
                     batch, ave_loss, acc))
+                if batch == len(train_loader):
+                    train_loss_list.append(ave_loss)
+                    train_accu_list.append(acc)
 
         ################
         ## Validation ##
         ################
         model.eval()
-        # TODO
+
+        val_correct_cnt, val_total_loss, val_total_cnt = 0, 0, 0
+        with torch.no_grad():
+            for batch, (val_x, val_label) in enumerate(val_loader,1):
+                if use_cuda:
+                    val_x, val_label = val_x.cuda(), val_label.cuda()
+                val_out = model(val_x)
+
+                val_loss = criterion(val_out, val_label)
+
+                val_total_loss += val_loss.item()
+                _, val_pred_label = torch.max(val_out, 1)
+                val_total_cnt += val_x.size(0)
+                val_correct_cnt += (val_pred_label == val_label).sum().item()
+        
+                if batch == len(val_loader):
+                    val_acc = val_correct_cnt / val_total_cnt
+                    val_ave_loss = val_total_loss / batch
+                    print ('Validation batch index: {}, validation loss: {:.6f}, acc: {:.3f}'.format(
+                        batch, val_ave_loss, val_acc))
+                    valid_loss_list.append(val_ave_loss)
+                    valid_accu_list.append(val_acc)
+
+        
         model.train()
 
     # Save trained model
     torch.save(model.state_dict(), './checkpoint/%s.pth' % model.name())
 
     # Plot Learning Curve
-    # TODO
-    
+    x_tick = list(range(ep))
+    fig = plt.figure()
+    plt.plot(x_tick, train_loss_list,'-',label='Training Loss')
+    plt.title("Training Loss_"+model_type)
+    plt.xlabel("epoches")
+    plt.ylabel("Loss")
+    plt.legend()
+
+    fig = plt.figure()
+    plt.plot(x_tick, train_accu_list,'-',label='Training Accuracy')
+    plt.title("Training Accuracy_"+model_type)
+    plt.xlabel("epoches")
+    plt.ylabel("Accuracy")
+    plt.legend()
+
+    fig = plt.figure()
+    plt.plot(x_tick, valid_loss_list,'-',label='Validation Loss')
+    plt.title("Validation Loss_"+model_type)
+    plt.xlabel("epoches")
+    plt.ylabel("Loss")
+    plt.legend()
+
+    fig = plt.figure()
+    plt.plot(x_tick, valid_accu_list,'-',label='Validation Accuracy')
+    plt.title("Validation Accuracy_"+model_type)
+    plt.xlabel("epoches")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.show()
 
     

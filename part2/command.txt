@@ -1,0 +1,1 @@
+python train.py ../hw2_data/p2/ conv

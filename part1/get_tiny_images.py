@@ -18,9 +18,25 @@ def get_tiny_images(image_paths):
         tiny image features : (N, d) matrix of resized and then vectorized tiny
         images. E.g. if the images are resized to 16x16, d would equal 256.
     '''
+    img = Image.open(image_paths[0])
+    img = img.resize((20, 20))
+    tiny_images = np.array(img)
+    tiny_images = np.reshape(tiny_images,(-1,400))
+
+    for i in range(1,len(image_paths)):
+        img = Image.open(image_paths[i])
+        img = img.resize((20, 20))
+        tmp = np.array(img)
+        tmp = np.reshape(tmp,(-1,400))
+        tiny_images = np.concatenate((tiny_images, tmp), axis=0)
+
+    avg_of_rows = tiny_images.sum(axis=1)/400
+    tiny_images = tiny_images - avg_of_rows[:,np.newaxis]
     
+    sqrt_sum_of_rows = np.sqrt(np.square(tiny_images).sum(axis=1))
+    tiny_images = tiny_images/sqrt_sum_of_rows[:,np.newaxis]
+
     ##############################################################################
     #                                END OF YOUR CODE                            #
     ##############################################################################
-
     return tiny_images

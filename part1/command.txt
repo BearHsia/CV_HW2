@@ -1,0 +1,1 @@
+python p1.py --feature tiny_image

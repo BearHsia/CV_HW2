@@ -62,7 +62,10 @@ def main():
     print("Getting paths and labels for all train and test data")
     train_image_paths, test_image_paths, train_labels, test_labels = \
         get_image_paths(DATA_PATH, CATEGORIES, NUM_TRAIN_PER_CAT)
-
+    print(len(train_image_paths))
+    print(len(train_labels))
+    print(train_image_paths[0])
+    print(train_labels[0])
     # TODO Step 1:
     # Represent each image with the appropriate feature
     # Each function to construct features should return an N x d matrix, where

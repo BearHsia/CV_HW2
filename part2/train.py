@@ -37,9 +37,14 @@ if __name__ == "__main__":
     valid_loss_list = []
     valid_accu_list = []
 
+    pytorch_total_params = sum(p.numel() for p in model.parameters())
+    print("Total params of "+model_type+":"+str(pytorch_total_params))
+    pytorch_trainable_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("Total trainable params of "+model_type+":"+str(pytorch_trainable_total_params))
+
     # Run any number of epochs you want
     ep = 10
-    for epoch in range(ep):
+    for epoch in range(1,ep+1):
         print('Epoch:', epoch)
         ##############
         ## Training ##
@@ -86,6 +91,7 @@ if __name__ == "__main__":
         model.eval()
 
         val_correct_cnt, val_total_loss, val_total_cnt = 0, 0, 0
+        best_accu = 0
         with torch.no_grad():
             for batch, (val_x, val_label) in enumerate(val_loader,1):
                 if use_cuda:
@@ -106,12 +112,16 @@ if __name__ == "__main__":
                         batch, val_ave_loss, val_acc))
                     valid_loss_list.append(val_ave_loss)
                     valid_accu_list.append(val_acc)
+                    if val_acc>best_accu:
+                        best_accu = val_acc
+                        if best_accu>0.985:
+                            torch.save(model.state_dict(), './checkpoint/%s.pth' % (model.name()+'_epc'+str(epoch)+'_accu'+str(int(best_accu*1000))))
 
         
         model.train()
 
     # Save trained model
-    torch.save(model.state_dict(), './checkpoint/%s.pth' % model.name())
+    #torch.save(model.state_dict(), './checkpoint/%s.pth' % (model.name()+'_epc'+str(ep)+'_accu'+str(int(valid_accu_list[-1]*1000))))
 
     # Plot Learning Curve
     x_tick = list(range(ep))

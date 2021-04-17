@@ -22,7 +22,8 @@ if __name__ == "__main__":
     # Modifiy this part to load your trained model
     # TODO
     #######################################################################
-
+    if model_type == 'conv':
+        model.load_state_dict(torch.load('./checkpoint/ConvNet.pth'))
 
     use_cuda = torch.cuda.is_available()
     if use_cuda:

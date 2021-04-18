@@ -1,1 +1,1 @@
-python p1.py --feature tiny_image
+python p1.py --feature tiny_image --classifier nearest_neighbor

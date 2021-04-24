@@ -57,6 +57,25 @@ def build_vocabulary(image_paths, vocab_size):
         Clusters centers of Kmeans
     '''
 
+    STEP = [2,2]
+    FAST = True
+    SAMPLE_FEATURE = 1000
+
+    img = Image.open(image_paths[0])
+    img = np.array(img)
+    _, descriptors = dsift(img,step=STEP,fast=FAST,float_descriptors=True)
+    np.random.shuffle(descriptors)
+    collected_feature = descriptors[:SAMPLE_FEATURE,:]
+
+    for i in range(1,len(image_paths)):
+        img = Image.open(image_paths[i])
+        img = np.array(img)
+        _, descriptors = dsift(img,step=STEP,fast=FAST,float_descriptors=True)
+        np.random.shuffle(descriptors)
+        tmp = descriptors[:SAMPLE_FEATURE,:]
+        collected_feature = np.concatenate((collected_feature, tmp), axis=0)
+
+    vocab = kmeans(collected_feature, vocab_size)
     ##################################################################################
     #                                END OF YOUR CODE                                #
     ##################################################################################
